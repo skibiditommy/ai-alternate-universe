@@ -1,126 +1,163 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, RotateCcw } from 'lucide-react';
-import StoryCard from '../components/StoryCard';
+import { useState, useEffect } from 'react';
+import { Sparkles, RotateCcw } from 'lucide-react';
+import TimelineTree from '../components/TimelineTree';
+
+const LOADING_PHRASES = [
+  "Initializing parameters...",
+  "Calculating divergence...",
+  "Simulating career paths...",
+  "Weaving lifestyle branches...",
+  "Finalizing timeline..."
+];
+
+const SUGGESTIONS = [
+  "What if I chose Commerce instead of Science?",
+  "What if I went to USA after high school?",
+  "What if I chose mechanical engineering?",
+];
 
 export default function Home() {
   const [initialPrompt, setInitialPrompt] = useState('');
-  const [history, setHistory] = useState([]);
+  const [timelineData, setTimelineData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [choices, setChoices] = useState([]);
-  
-  const endOfStoryRef = useRef(null);
+  const [error, setError] = useState(null);
+  const [loadingTextIdx, setLoadingTextIdx] = useState(0);
 
   useEffect(() => {
-    endOfStoryRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [history, choices]);
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingTextIdx((prev) => (prev + 1) % LOADING_PHRASES.length);
+      }, 2500);
+    } else {
+      setLoadingTextIdx(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
-  const generateStory = async (userChoice) => {
-    if (!userChoice.trim()) return;
+  const handleSuggestionClick = (suggestion) => {
+    setInitialPrompt(suggestion);
+  };
+
+  const generateTimeline = async () => {
+    if (!initialPrompt.trim()) return;
     
     setIsLoading(true);
-    setChoices([]);
-    
-    const newHistory = [...history, { role: 'user', content: userChoice }];
-    setHistory(newHistory);
-    setInitialPrompt('');
+    setError(null);
+    setTimelineData(null);
 
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ choice: userChoice, history: history })
+        body: JSON.stringify({ choice: initialPrompt })
       });
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to generate story');
+        throw new Error(errData.error || 'Failed to generate timeline');
       }
 
       const data = await response.json();
       
-      setHistory([...newHistory, { role: 'assistant', content: data.story }]);
-      setChoices(data.choices || []);
+      if (data.timeline) {
+        setTimelineData(data.timeline);
+      } else {
+        throw new Error('Invalid timeline structure received');
+      }
       
-    } catch (error) {
-      console.error(error);
-      setHistory([...newHistory, { role: 'assistant', content: `Error: ${error.message}. The timelines have destabilized.` }]);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const resetUniverse = () => {
-    setHistory([]);
-    setChoices([]);
+    setTimelineData(null);
     setInitialPrompt('');
+    setError(null);
   };
 
   return (
-    <main className="container">
-      <h1 className="title">Alternate Universe Generator</h1>
-      <p className="subtitle">Explore the paths not taken. What if...</p>
+    <div className="container-fluid">
+      {!timelineData && !isLoading && (
+        <div className="hero-section animate-slide-down">
+          <div className="hero-badge">Simulation Engine v1.0</div>
+          <h1 className="hero-title">
+            The Road <span className="text-gradient">Not Taken</span>
+          </h1>
+          <p className="hero-subtitle">
+            Input a historical decision point. The agent will compute an alternate life trajectory, generating branches for career, lifestyle, and personality divergence.
+          </p>
 
-      {history.length === 0 ? (
-        <div className="input-area animate-fade-in">
-          <input
-            type="text"
-            className="input-field"
-            placeholder="e.g. What if I pursued art instead of engineering?"
-            value={initialPrompt}
-            onChange={(e) => setInitialPrompt(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && generateStory(initialPrompt)}
-            disabled={isLoading}
-          />
-          <button 
-            className="primary-btn"
-            onClick={() => generateStory(initialPrompt)}
-            disabled={isLoading || !initialPrompt.trim()}
-          >
-            {isLoading ? <Loader2 className="loading-spinner" /> : <Sparkles size={20} />}
-            Generate
-          </button>
-        </div>
-      ) : (
-        <div className="story-container">
-          {history.map((entry, index) => (
-            <StoryCard key={index} entry={entry} isLatest={index === history.length - 1} />
-          ))}
-          
-          {isLoading && (
-            <div className="glass-card animate-fade-in" style={{ textAlign: 'center', padding: '2rem' }}>
-              <Loader2 className="loading-spinner" style={{ width: '30px', height: '30px', color: 'var(--accent-color)' }} />
-              <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Weaving the fabric of reality...</p>
+          <div className="input-container">
+            <div className="input-wrapper">
+              <input
+                type="text"
+                className="hero-input"
+                placeholder="e.g. What if I pursued mechanical engineering instead of CS?"
+                value={initialPrompt}
+                onChange={(e) => setInitialPrompt(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && generateTimeline()}
+              />
+              <button 
+                className="hero-submit-btn"
+                onClick={generateTimeline}
+                disabled={!initialPrompt.trim()}
+              >
+                <span>Simulate</span>
+              </button>
             </div>
-          )}
-
-          {!isLoading && choices.length > 0 && (
-            <div className="choices-grid animate-fade-in">
-              {choices.map((choice, idx) => (
-                <button 
-                  key={idx} 
-                  className="choice-btn"
-                  onClick={() => generateStory(choice.action)}
-                >
-                  <div className="choice-title">{choice.title}</div>
-                  <div className="choice-desc">{choice.action}</div>
-                </button>
-              ))}
+            
+            <div className="suggestions-area">
+              <span className="suggestions-label">Examples:</span>
+              <div className="suggestion-pills">
+                {SUGGESTIONS.map((text, i) => (
+                  <button key={i} className="suggestion-pill" onClick={() => handleSuggestionClick(text)}>
+                    {text}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
 
-          {!isLoading && history.length > 0 && (
-             <div style={{ textAlign: 'center', marginTop: '3rem' }} className="animate-fade-in">
-                <button className="primary-btn" onClick={resetUniverse} style={{ background: 'transparent', border: '1px solid var(--card-border)', margin: '0 auto', color: 'var(--text-muted)' }}>
-                  <RotateCcw size={16} /> Reset Timeline
-                </button>
-             </div>
-          )}
-
-          <div ref={endOfStoryRef} />
+            {error && (
+              <div style={{ marginTop: '1rem', color: '#F87171', fontSize: '0.9rem' }}>
+                Error: {error}
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </main>
+
+      {isLoading && (
+        <div className="loading-container animate-fade-in">
+           <div className="spinner"></div>
+           <div className="loading-text-wrapper">
+             <h2 className="loading-title">Generating Branches</h2>
+             <p className="loading-phrase">{LOADING_PHRASES[loadingTextIdx]}</p>
+           </div>
+        </div>
+      )}
+
+      {timelineData && !isLoading && (
+        <div className="timeline-view animate-fade-in">
+           <div className="timeline-header-card">
+             <div className="decision-reminder">
+               <span className="label">Origin Point</span> 
+               <span className="value">"{initialPrompt}"</span>
+             </div>
+             <button className="reset-btn" onClick={resetUniverse}>
+                <RotateCcw size={14} /> New Simulation
+             </button>
+           </div>
+           
+           <TimelineTree data={timelineData} />
+        </div>
+      )}
+    </div>
   );
 }

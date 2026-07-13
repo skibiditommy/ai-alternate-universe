@@ -1,65 +1,72 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
-const ai = new GoogleGenAI({});
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { choice, history } = body;
+    const { choice } = body;
 
-    let promptText = `You are the "Alternate Universe Generator", an interactive narrator. 
-The user is exploring branching paths of an alternate life based on past choices.
-Maintain an engaging, immersive, and vivid narrative style. Keep the story internally consistent.
+    const promptText = `You are an expert Timeline Architect for an alternate universe simulator.
+The user is asking: "What if I had chosen: ${choice}?"
+Your task is to generate a comprehensive branching timeline of their life from that decision point onwards.
 
-Current context and history:
-`;
-    
-    if (history && history.length > 0) {
-      history.forEach((h) => {
-        promptText += `\n${h.role === 'user' ? 'User Choice' : 'Narrator'}: ${h.content}`;
-      });
-    }
+Generate a JSON object representing a tree of life stages.
+Start with a root node (the immediate aftermath of the decision, e.g., Year 1-3).
+Then create 2-3 branches representing different paths their life could take (e.g., Year 5-10).
+For each of those branches, create 1-2 more sub-branches (e.g., Year 15+).
 
-    promptText += `\n\nLatest User Choice: ${choice}`;
-    promptText += `\n\nBased on the user's latest choice, write the next segment of the story (around 2-3 paragraphs). Describe the consequences and the new reality.
-Then, provide exactly 2 to 3 branching choices for the user's next action.
-Output your response in valid JSON format ONLY, structured like this:
+Ensure the narrative is internally consistent, vivid, and realistic. Branches MUST genuinely diverge (e.g., one path leads to massive success but burnout, another leads to quiet contentment, another is a complete pivot).
+
+The output MUST be valid JSON with the exact following schema:
 {
-  "story": "The narrative text here...",
-  "choices": [
-    {
-      "title": "Short title for choice 1",
-      "action": "Description of action 1"
-    },
-    {
-      "title": "Short title for choice 2",
-      "action": "Description of action 2"
-    }
-  ]
+  "timeline": {
+    "id": "root",
+    "year": "Years 1-3",
+    "title": "Short title of this life stage",
+    "career": "Description of professional life...",
+    "lifestyle": "Description of personal life, location, habits...",
+    "personality": "Description of how their worldview/mindset has changed...",
+    "probability": 100,
+    "branches": [
+      {
+        "id": "branch-1",
+        "year": "Years 5-10",
+        "title": "...",
+        "career": "...",
+        "lifestyle": "...",
+        "personality": "...",
+        "probability": 60,
+        "branches": [
+           // Further sub-branches following the exact same structure...
+        ]
+      }
+    ]
+  }
 }
-Do not include any markdown formatting like \`\`\`json around the output, just the raw JSON object.`;
+Output ONLY the raw JSON object. Do not include markdown formatting like \`\`\`json.`;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: promptText,
-        config: {
-            responseMimeType: "application/json",
-            temperature: 0.7,
-        }
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: "You are a JSON-only response bot. You output valid JSON and nothing else." },
+        { role: "user", content: promptText }
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
+      response_format: { type: "json_object" },
     });
 
-    const responseText = response.text;
+    const responseText = chatCompletion.choices[0]?.message?.content;
     
     try {
         const jsonResponse = JSON.parse(responseText);
         return NextResponse.json(jsonResponse);
     } catch (parseError) {
         console.error("Failed to parse JSON from LLM:", responseText);
-        return NextResponse.json({ 
-            story: "The timeline became unstable and the narrative fractured. (Error parsing AI response)", 
-            choices: [] 
-        }, { status: 500 });
+        return NextResponse.json({ error: "Failed to parse timeline." }, { status: 500 });
     }
 
   } catch (error) {

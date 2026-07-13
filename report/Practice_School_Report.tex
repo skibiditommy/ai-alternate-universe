@@ -1,0 +1,161 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{array}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\Large \textbf{A REPORT}}\\[0.5cm]
+    {\Large \textbf{ON}}\\[0.5cm]
+    {\Large \textbf{PATHFINDER: AI ALTERNATE UNIVERSE GENERATOR}}\\[2cm]
+    
+    {\large \textbf{BY}}\\[1cm]
+    
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{lll}
+        Name of the student & ID No. & Discipline \\
+        Bohin & [Your ID Here] & [Your Discipline Here] \\
+        \end{tabular}
+    \end{table}
+    
+    \vspace{2cm}
+    
+    {\large \textbf{Prepared in partial fulfillment of the}}\\
+    {\large \textbf{Practice School - I/II}}\\[1cm]
+    
+    {\large \textbf{AT}}\\[1cm]
+    
+    {\large \textbf{[Name of the PS Station]}}\\
+    {\large \textbf{A Practice School - I/II}}\\
+    {\large \textbf{Station of}}\\[1cm]
+    
+    % \includegraphics[width=0.3\textwidth]{bits_logo.png} % Placeholder for logo
+    {\large \textbf{BIRLA INSTITUTE OF TECHNOLOGY \& SCIENCE, PILANI}}\\[0.5cm]
+    {\large \textbf{June, 2026}}
+\end{titlepage}
+
+% Page 2 form
+\newpage
+\begin{center}
+    {\large \textbf{BIRLA INSTITUTE OF TECHNOLOGY \& SCIENCE, PILANI}}\\
+    {\large \textbf{Practice School Division}}
+\end{center}
+\vspace{1cm}
+\noindent
+\begin{tabular}{@{}p{0.5\textwidth}p{0.5\textwidth}@{}}
+\textbf{Station} & \textbf{Centre} \\[0.5cm]
+\textbf{Duration} & \textbf{Date of start} \\[0.5cm]
+\textbf{Date of submission} & \\[0.5cm]
+\textbf{Title of the project:} & PathFinder: AI Alternate Universe Generator \\[0.5cm]
+\textbf{ID No.(s), Name(s) and} & Bohin, [ID], [Discipline] \\
+\textbf{Disciplines of the student(s):} & \\[0.5cm]
+\textbf{Name(s) and Designation(s)} & [Expert Names] \\
+\textbf{of the expert(s):} & \\[0.5cm]
+\textbf{Name(s) of the PS faculty} & [Faculty Names] \\
+\textbf{member(s):} & \\[0.5cm]
+\textbf{Key words:} & AI, Next.js, React, LLM, Generative AI \\[0.5cm]
+\textbf{Project area(s):} & Web Development, Artificial Intelligence \\[0.5cm]
+\end{tabular}\\[0.5cm]
+\textbf{Abstract:}\\
+This project details the development of PathFinder, an interactive web application that leverages the Google Gemini model to generate branching, narratively consistent "alternate life" stories based on past decisions. The application features a robust Next.js architecture, secure LLM API communication, and a premium, responsive user interface built with advanced React components to visualize complex timeline trees.
+\vspace{1.5cm}
+
+\noindent
+\begin{tabular}{@{}p{0.5\textwidth}p{0.5\textwidth}@{}}
+Signature of the student(s) & Signature of the PS faculty member(s) \\[1cm]
+Date & Date
+\end{tabular}
+
+% Acknowledgements
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+\par\noindent
+I would like to express my gratitude to my mentors and the Practice School division of BITS Pilani for providing the opportunity to work on this challenging and exciting project. I am also thankful for the resources and guidance that helped shape PathFinder into a complete product.
+\vspace{2cm}
+
+\noindent
+Signature of the student(s)
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter{Introduction}
+\section{Project Overview}
+PathFinder is an AI-powered simulation engine designed to explore "The Road Not Taken." Every individual encounters pivotal decisions that drastically alter their life's trajectory. This application allows users to explore divergent paths safely by inputting a historical decision point. The system acts as a "Timeline Architect," computing a vast branching structure across multiple decades, covering career, lifestyle, and personality evolution.
+
+\section{Objectives}
+The primary objectives of this project were:
+\begin{itemize}
+    \item To architect a robust Next.js application handling secure LLM API communication.
+    \item To implement a strict JSON schema pipeline for LLM reasoning to ensure valid data structures representing timeline trees.
+    \item To design and build a premium, responsive UI featuring an interactive, visual tree representation of the alternate life paths.
+    \item To ensure the generated narratives possess genuine divergence and logical probability estimates.
+\end{itemize}
+
+\chapter{Literature Review}
+The project draws upon several modern technologies and concepts:
+\par\noindent
+\textbf{Large Language Models (LLMs):} The core engine utilizes Google's Gemini 2.5 Flash model, known for its high performance and ability to follow strict JSON formatting instructions.
+\par\noindent
+\textbf{Next.js and React:} The frontend framework chosen for its server-side rendering capabilities, API route handling, and component-based architecture suitable for complex visualizations like recursive trees.
+\par\noindent
+\textbf{UI/UX Design Principles:} The project transitioned from a "vibecoded" aesthetic (glassmorphism, heavy gradients) to a professional "Advanced Human Developer" design, characterized by strict typography, minimalist components, and pure dark mode, emulating industry-leading tools like Linear and Vercel.
+
+\chapter{Methodology}
+\section{System Architecture}
+The application is built on a Next.js framework. The frontend consists of standard React components, notably \texttt{TimelineTree} and \texttt{TimelineNode}, which recursively render the JSON data. The backend is handled by a Next.js API route (\texttt{/api/generate}) which securely interfaces with the Gemini API.
+
+\section{Prompt Engineering and Data Structure}
+To ensure the LLM outputs a renderable tree, a highly structured prompt was developed. The model is instructed to output ONLY valid JSON adhering to a specific schema. Each node in the tree represents a life stage and includes properties for:
+\begin{itemize}
+    \item \texttt{year}: The timeframe (e.g., "Years 1-3").
+    \item \texttt{career}, \texttt{lifestyle}, \texttt{personality}: Facets of the alternate life.
+    \item \texttt{probability}: A calculated likelihood of the branch occurring relative to its siblings.
+    \item \texttt{branches}: An array of sub-nodes representing further divergence.
+\end{itemize}
+
+\section{Frontend Implementation}
+The UI was initially developed with a stylized aesthetic but was later refactored to a professional standard. The timeline visualization uses CSS Flexbox to draw connecting lines and CSS Grid to smoothly expand nodes and reveal the narrative content.
+
+\chapter{Results and Discussions}
+The implemented system successfully takes a user's prompt (e.g., "What if I moved to Tokyo after high school?") and generates a plausible, branching timeline within seconds. 
+\par\noindent
+The transition to a professional UI significantly improved the user experience. The removal of heavy animations in favor of snappy transitions (150ms ease-out) and the use of solid borders and a pure dark background made the application feel like a robust software tool rather than a prototype. The dynamic coloring of nodes based on probability provides immediate visual feedback on the likelihood of different paths.
+
+\chapter{Conclusions and future work}
+PathFinder demonstrates the viability of using structured LLM outputs to generate complex, interactive narratives. The Next.js architecture proved highly effective for this use case, allowing for a seamless integration of frontend visualization and backend API communication.
+\par\noindent
+Future work could include:
+\begin{itemize}
+    \item Implementing user authentication to save generated timelines to a database.
+    \item Adding a feature to export the timeline tree as an image or PDF document.
+    \item Allowing users to manually add custom branches or modify the LLM's generated nodes.
+\end{itemize}
+
+\chapter{Recommendations}
+For future projects utilizing LLMs for structured data generation, enforcing rigid JSON schemas within the prompt and utilizing models capable of structured outputs (like Gemini) is highly recommended. Furthermore, investing in clean, minimalist UI design early in the development cycle can significantly elevate the perceived quality of the application and improve the overall user experience.
+
+\begin{thebibliography}{9}
+\bibitem{nextjs} 
+Vercel Inc. Next.js Documentation. \url{https://nextjs.org/docs}
+\bibitem{gemini}
+Google. Gemini API Documentation. \url{https://ai.google.dev/docs}
+\bibitem{react}
+Meta Platforms, Inc. React Documentation. \url{https://react.dev/}
+\end{thebibliography}
+
+\appendix
+\chapter{Core Generation Logic}
+The core logic for communicating with the Gemini model is located in \texttt{app/api/generate/route.js}. It handles the POST request, constructs the structured prompt, and parses the JSON response into the tree structure used by the frontend components.
+
+\end{document}

@@ -1,0 +1,23 @@
+graph TD
+    A[User Input] -->|Enter Decision| B(Frontend: Next.js + React)
+    B -->|POST /api/generate| C{API Route}
+    C -->|Constructs JSON Schema Prompt| D[Google Gemini 2.5 Flash]
+    D -->|Generates Alternate Life Branches| C
+    C -->|Parses & Validates JSON| B
+    B -->|Renders TimelineTree| E[Interactive UI]
+    
+    subgraph Frontend
+        B
+        E
+    end
+
+    subgraph Backend
+        C
+        D
+    end
+
+    style A fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#1e1e2f,stroke:#4f46e5,stroke-width:2px,color:#fff
+    style C fill:#1e1e2f,stroke:#10b981,stroke-width:2px,color:#fff
+    style D fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
+    style E fill:#f59e0b,stroke:#fff,stroke-width:2px,color:#fff
