@@ -1,16 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { RotateCcw, AlertCircle, X, GitBranch } from 'lucide-react';
 import TimelineTree from '../components/TimelineTree';
-
-const LOADING_PHRASES = [
-  "Initializing parameters...",
-  "Calculating divergence...",
-  "Simulating career paths...",
-  "Weaving lifestyle branches...",
-  "Finalizing timeline..."
-];
 
 const SUGGESTIONS = [
   "What if I chose Commerce instead of Science?",
@@ -18,24 +10,32 @@ const SUGGESTIONS = [
   "What if I chose mechanical engineering?",
 ];
 
+function SkeletonCard() {
+  return (
+    <div className="skeleton-card">
+      <div className="skeleton-section">
+        <div className="skeleton-line w-40"></div>
+        <div className="skeleton-line w-80 h-lg"></div>
+      </div>
+      <div className="skeleton-section">
+        <div className="skeleton-label"></div>
+        <div className="skeleton-line w-100"></div>
+        <div className="skeleton-line w-60"></div>
+      </div>
+      <div className="skeleton-section">
+        <div className="skeleton-label"></div>
+        <div className="skeleton-line w-80"></div>
+        <div className="skeleton-line w-100"></div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [initialPrompt, setInitialPrompt] = useState('');
   const [timelineData, setTimelineData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [loadingTextIdx, setLoadingTextIdx] = useState(0);
-
-  useEffect(() => {
-    let interval;
-    if (isLoading) {
-      interval = setInterval(() => {
-        setLoadingTextIdx((prev) => (prev + 1) % LOADING_PHRASES.length);
-      }, 2500);
-    } else {
-      setLoadingTextIdx(0);
-    }
-    return () => clearInterval(interval);
-  }, [isLoading]);
 
   const handleSuggestionClick = (suggestion) => {
     setInitialPrompt(suggestion);
@@ -82,42 +82,55 @@ export default function Home() {
     setError(null);
   };
 
+  const showHero = !timelineData && !isLoading;
+
   return (
     <div className="container-fluid">
-      {!timelineData && !isLoading && (
-        <div className="hero-section animate-slide-down">
-          <div className="hero-badge">Simulation Engine v1.0</div>
+      {showHero && (
+        <section className="hero-section animate-fade-in">
           <h1 className="hero-title">
             The Road <span className="text-gradient">Not Taken</span>
           </h1>
           <p className="hero-subtitle">
-            Input a historical decision point. The agent will compute an alternate life trajectory, generating branches for career, lifestyle, and personality divergence.
+            Input a historical decision point. The engine computes an alternate
+            life trajectory — branching across career, lifestyle, and personality.
           </p>
 
           <div className="input-container">
+            <label htmlFor="decision-input" className="input-label">
+              Describe your decision point
+            </label>
             <div className="input-wrapper">
               <input
+                id="decision-input"
                 type="text"
                 className="hero-input"
                 placeholder="e.g. What if I pursued mechanical engineering instead of CS?"
                 value={initialPrompt}
                 onChange={(e) => setInitialPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && generateTimeline()}
+                aria-describedby={error ? "input-error" : undefined}
               />
               <button 
                 className="hero-submit-btn"
                 onClick={generateTimeline}
                 disabled={!initialPrompt.trim()}
+                aria-label="Simulate timeline"
               >
-                <span>Simulate</span>
+                Simulate
               </button>
             </div>
             
             <div className="suggestions-area">
-              <span className="suggestions-label">Examples:</span>
+              <span className="suggestions-label">Try:</span>
               <div className="suggestion-pills">
                 {SUGGESTIONS.map((text, i) => (
-                  <button key={i} className="suggestion-pill" onClick={() => handleSuggestionClick(text)}>
+                  <button
+                    key={i}
+                    className="suggestion-pill"
+                    onClick={() => handleSuggestionClick(text)}
+                    aria-label={`Use suggestion: ${text}`}
+                  >
                     {text}
                   </button>
                 ))}
@@ -125,21 +138,29 @@ export default function Home() {
             </div>
 
             {error && (
-              <div style={{ marginTop: '1rem', color: '#F87171', fontSize: '0.9rem' }}>
-                Error: {error}
+              <div className="error-banner" id="input-error" role="alert">
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span className="error-banner-text">{error}</span>
+                <button className="error-dismiss" onClick={() => setError(null)} aria-label="Dismiss error">
+                  <X size={14} />
+                </button>
               </div>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {isLoading && (
-        <div className="loading-container animate-fade-in">
-           <div className="spinner"></div>
-           <div className="loading-text-wrapper">
-             <h2 className="loading-title">Generating Branches</h2>
-             <p className="loading-phrase">{LOADING_PHRASES[loadingTextIdx]}</p>
-           </div>
+        <div className="animate-fade-in">
+          <div className="skeleton-container">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+          <div className="loading-status">
+            <span className="loading-dot"></span>
+            <span>Generating branching timeline&hellip;</span>
+          </div>
         </div>
       )}
 
@@ -147,11 +168,11 @@ export default function Home() {
         <div className="timeline-view animate-fade-in">
            <div className="timeline-header-card">
              <div className="decision-reminder">
-               <span className="label">Origin Point</span> 
-               <span className="value">"{initialPrompt}"</span>
+               <span className="label">Decision Point</span> 
+               <span className="value">&ldquo;{initialPrompt}&rdquo;</span>
              </div>
              <button className="reset-btn" onClick={resetUniverse}>
-                <RotateCcw size={14} /> New Simulation
+                <RotateCcw size={13} /> New Simulation
              </button>
            </div>
            

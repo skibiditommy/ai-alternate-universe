@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PathFinder — Project Presentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFAFA;
+      --slide-bg: #FFFFFF;
+      --text: #1A1D21;
+      --text-secondary: #5E6369;
+      --text-muted: #9CA0A6;
+      --accent: #0F52BA;
+      --accent-light: rgba(15, 82, 186, 0.08);
+      --border: #E2E5E9;
+      --success: #16A34A;
+      --warning: #CA8A04;
+      --danger: #DC2626;
+      --code-bg: #F3F4F6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ========== SLIDE ENGINE ========== */
+    .deck { position: relative; height: 100vh; width: 100vw; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: 64px 120px;
+      background: var(--slide-bg);
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+
+    .slide.active { display: flex; opacity: 1; }
+
+    .slide.title-slide {
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* ========== TYPOGRAPHY ========== */
+    .slide-number {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    h1 .accent { color: var(--accent); }
+
+    h2 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 32px;
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 640px;
+    }
+
+    .meta-line {
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ========== CONTENT BLOCKS ========== */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-top: 8px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 32px;
+      margin-top: 8px;
+    }
+
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .card.accent-border { border-left: 3px solid var(--accent); }
+    .card.success-border { border-left: 3px solid var(--success); }
+    .card.warning-border { border-left: 3px solid var(--warning); }
+    .card.danger-border { border-left: 3px solid var(--danger); }
+
+    .card p, .card li {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    ul { list-style: none; padding: 0; }
+
+    ul li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    ul li strong { color: var(--text); font-weight: 600; }
+
+    /* ========== TABLE ========== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+    /* ========== CODE ========== */
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--accent);
+    }
+
+    .code-block {
+      background: #1a1d21;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    .code-block .kw { color: #c084fc; }
+    .code-block .str { color: #86efac; }
+    .code-block .cm { color: #6b7280; }
+    .code-block .fn { color: #93c5fd; }
+    .code-block .num { color: #fbbf24; }
+
+    /* ========== TIMELINE ========== */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 16px;
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 24px;
+      padding-bottom: 24px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--slide-bg);
+    }
+
+    .timeline-item .t-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .t-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ========== FLOW DIAGRAM ========== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .flow-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .flow-box.highlight {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .flow-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    /* ========== NAVIGATION ========== */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 48px;
+      background: var(--slide-bg);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+    }
+
+    .nav-bar button {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 120ms ease;
+    }
+
+    .nav-bar button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      transition: width 300ms ease;
+      z-index: 200;
+    }
+
+    .key-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ========== BADGE ========== */
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .badge.blue { background: var(--accent-light); color: var(--accent); }
+    .badge.green { background: rgba(22,163,74,0.08); color: var(--success); }
+    .badge.yellow { background: rgba(202,138,4,0.08); color: var(--warning); }
+    .badge.red { background: rgba(220,38,38,0.08); color: var(--danger); }
+    .badge.gray { background: var(--code-bg); color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ============ SLIDE 1: TITLE ============ -->
+  <div class="slide title-slide active">
+    <div class="section-label">Project Presentation</div>
+    <h1>The Road <span class="accent">Not Taken</span></h1>
+    <p class="subtitle">
+      An AI-powered simulation engine that generates branching alternate life
+      timelines from historical decision points — exploring divergent careers,
+      lifestyles, and personality outcomes.
+    </p>
+    <p class="meta-line">Harshith Bohini &nbsp;·&nbsp; BITS Pilani &nbsp;·&nbsp; Caarya Build Sprint 2026</p>
+    <span class="slide-number">1 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 2: PROBLEM ============ -->
+  <div class="slide">
+    <div class="section-label">Motivation</div>
+    <h2>The Problem I Wanted to Solve</h2>
+    <div class="two-col">
+      <div>
+        <ul>
+          <li><strong>Decision regret is universal</strong> — everyone wonders "what if?" about pivotal life choices</li>
+          <li><strong>Existing AI tools are flat</strong> — chatbots give a single linear narrative, not a branching tree of outcomes</li>
+          <li><strong>No structured exploration</strong> — I wanted career, lifestyle, and personality to be tracked independently across branches</li>
+        </ul>
+      </div>
+      <div class="card accent-border">
+        <div class="card-label">Core Insight</div>
+        <p>Life isn't linear — it branches. A single decision can fork into multiple distinct futures. I needed the UI to <strong>reflect that tree structure</strong>, not just dump text.</p>
+        <br>
+        <div class="card-label">Design Goal</div>
+        <p>Build something that feels like a <strong>professional simulation tool</strong>, not a chatbot wrapper. Data-dense, interactive, visually clean.</p>
+      </div>
+    </div>
+    <span class="slide-number">2 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 3: TECH STACK ============ -->
+  <div class="slide">
+    <div class="section-label">Architecture</div>
+    <h2>Tech Stack &amp; Rationale</h2>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Technology</th><th>Why I Chose This</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Framework</td>
+          <td><span class="badge blue">Next.js 16</span></td>
+          <td>Server-side API routes keep the API key secure. React gives me recursive component rendering for the tree.</td>
+        </tr>
+        <tr>
+          <td>LLM Inference</td>
+          <td><span class="badge green">Groq API</span></td>
+          <td>Sub-second inference on LLaMA 3.3 70B. Free tier is generous. Native <code>json_object</code> response mode ensures valid output.</td>
+        </tr>
+        <tr>
+          <td>Styling</td>
+          <td><span class="badge gray">Vanilla CSS</span></td>
+          <td>Full control over a custom design system. 8px baseline grid, CSS custom properties for tokens. No framework overhead.</td>
+        </tr>
+        <tr>
+          <td>Deployment</td>
+          <td><span class="badge blue">Vercel</span></td>
+          <td>Zero-config deployment from GitHub. Serverless functions handle the API route. Edge network for global latency.</td>
+        </tr>
+        <tr>
+          <td>Icons</td>
+          <td><span class="badge gray">Lucide React</span></td>
+          <td>Tree-shakable, consistent stroke-width icons. Much lighter than FontAwesome.</td>
+        </tr>
+      </tbody>
+    </table>
+    <span class="slide-number">3 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 4: DATA FLOW ============ -->
+  <div class="slide">
+    <div class="section-label">Architecture</div>
+    <h2>Data Flow &amp; Pipeline</h2>
+
+    <div class="flow">
+      <div class="flow-box">User Input</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">Next.js API Route</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box highlight">Groq / LLaMA 3.3 70B</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">JSON Tree Response</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">Recursive React Render</div>
+    </div>
+
+    <div class="two-col" style="margin-top: 40px;">
+      <div>
+        <h3>Prompt Engineering</h3>
+        <ul>
+          <li>System prompt enforces a <strong>"Timeline Architect"</strong> persona</li>
+          <li>Strict JSON schema defined inline with exact field names: <code>career</code>, <code>lifestyle</code>, <code>personality</code>, <code>probability</code></li>
+          <li>Sibling probabilities must sum to ~100%</li>
+          <li>Branches must <strong>genuinely diverge</strong> — no three variations of the same outcome</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Why JSON Mode?</h3>
+        <ul>
+          <li>Groq's <code>response_format: json_object</code> guarantees parseable output</li>
+          <li>Eliminates regex-based extraction or markdown stripping</li>
+          <li>Direct <code>JSON.parse()</code> in the API route — no post-processing pipeline needed</li>
+          <li>Schema validation happens at render-time through React's recursive component</li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-number">4 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 5: PROMPT ============ -->
+  <div class="slide">
+    <div class="section-label">Implementation</div>
+    <h2>Core Prompt &amp; Schema Contract</h2>
+    <div class="code-block">
+<span class="cm">// Enforced JSON schema sent to LLaMA 3.3 70B via Groq</span>
+{
+  <span class="str">"timeline"</span>: {
+    <span class="str">"id"</span>: <span class="str">"root"</span>,
+    <span class="str">"year"</span>: <span class="str">"Years 1-3"</span>,
+    <span class="str">"title"</span>: <span class="str">"Short title of this life stage"</span>,
+    <span class="str">"career"</span>: <span class="str">"Description of professional life..."</span>,
+    <span class="str">"lifestyle"</span>: <span class="str">"Description of personal life..."</span>,
+    <span class="str">"personality"</span>: <span class="str">"How worldview has changed..."</span>,
+    <span class="str">"probability"</span>: <span class="num">100</span>,
+    <span class="str">"branches"</span>: [
+      {
+        <span class="str">"id"</span>: <span class="str">"branch-1"</span>,
+        <span class="str">"year"</span>: <span class="str">"Years 5-10"</span>,
+        <span class="cm">// ... same recursive structure</span>
+        <span class="str">"probability"</span>: <span class="num">60</span>,  <span class="cm">// siblings sum to ~100</span>
+        <span class="str">"branches"</span>: [...]
+      }
+    ]
+  }
+}
+    </div>
+    <p style="margin-top: 16px; font-size: 14px; color: var(--text-secondary);">
+      This contract is embedded directly in the system prompt. The LLM is instructed to output <strong>only</strong> the raw JSON — no markdown fences, no explanatory text. The recursive <code>branches[]</code> array maps directly to the React component tree.
+    </p>
+    <span class="slide-number">5 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 6: RECURSIVE RENDERING ============ -->
+  <div class="slide">
+    <div class="section-label">Implementation</div>
+    <h2>Recursive Tree Visualization</h2>
+    <div class="two-col">
+      <div>
+        <h3>The Challenge</h3>
+        <p style="color: var(--text-secondary); line-height: 1.6; font-size: 15px; margin-bottom: 16px;">
+          The LLM returns an arbitrarily deep nested tree. I needed a React component
+          that could render <strong>any depth</strong> without hardcoding levels —
+          and draw connector lines between parent and child nodes using pure CSS.
+        </p>
+        <h3>The Solution</h3>
+        <ul>
+          <li><strong>Two components</strong>: <code>TimelineTree</code> calls <code>renderTree()</code> recursively; <code>TimelineNode</code> handles a single card</li>
+          <li><strong>Flexbox layout</strong> with horizontal branching — parent on left, children stacked vertically on right</li>
+          <li><strong>CSS pseudo-elements</strong> (<code>::before</code>, <code>::after</code>) draw the L-shaped connector lines</li>
+          <li><strong>Expand/collapse</strong> via CSS Grid <code>grid-template-rows: 0fr → 1fr</code> for smooth animation</li>
+        </ul>
+      </div>
+      <div class="code-block" style="font-size: 12px;">
+<span class="cm">// TimelineTree.js — recursive renderer</span>
+<span class="kw">const</span> <span class="fn">renderTree</span> = (node, isRoot) => {
+  <span class="kw">return</span> (
+    &lt;<span class="kw">div</span> className=<span class="str">"tree-node-container"</span>&gt;
+      &lt;<span class="kw">div</span> className=<span class="str">"tree-node-content"</span>&gt;
+        &lt;<span class="fn">TimelineNode</span>
+          node={node}
+          isRoot={isRoot}
+        /&gt;
+      &lt;/<span class="kw">div</span>&gt;
+      {node.branches?.length > <span class="num">0</span> && (
+        &lt;<span class="kw">div</span> className=<span class="str">"tree-branches"</span>&gt;
+          {node.branches.<span class="fn">map</span>(branch =>
+            <span class="fn">renderTree</span>(branch, <span class="kw">false</span>)
+          )}
+        &lt;/<span class="kw">div</span>&gt;
+      )}
+    &lt;/<span class="kw">div</span>&gt;
+  );
+};
+      </div>
+    </div>
+    <span class="slide-number">6 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 7: DESIGN SYSTEM ============ -->
+  <div class="slide">
+    <div class="section-label">Design</div>
+    <h2>Design System Architecture</h2>
+    <div class="three-col">
+      <div class="card accent-border">
+        <div class="card-label">Color Tokens</div>
+        <p>Monochromatic white/slate base with a <strong>single accent: #0F52BA</strong>. No gradients, no neon. Probability uses semantic colors (green/yellow/red).</p>
+      </div>
+      <div class="card accent-border">
+        <div class="card-label">Spacing Grid</div>
+        <p>Strict <strong>8px baseline grid</strong>. All margins and paddings are multiples of 8 via CSS custom properties (<code>--space-1</code> through <code>--space-8</code>).</p>
+      </div>
+      <div class="card accent-border">
+        <div class="card-label">Typography</div>
+        <p>System sans-serif stack. Three levels: <strong>H1 (32px/700)</strong>, <strong>H2 (24px/600)</strong>, <strong>Body (16px/400)</strong>. No external font requests.</p>
+      </div>
+    </div>
+    <div class="three-col" style="margin-top: 24px;">
+      <div class="card success-border">
+        <div class="card-label">Interactive States</div>
+        <p>Every button, input, and link has defined <strong>hover, active, focus-visible</strong>, and disabled states. Keyboard-navigable throughout.</p>
+      </div>
+      <div class="card warning-border">
+        <div class="card-label">Loading States</div>
+        <p><strong>Skeleton loaders</strong> with CSS shimmer animation replace traditional spinners. Three placeholder cards mimic the final timeline layout.</p>
+      </div>
+      <div class="card danger-border">
+        <div class="card-label">Error Handling</div>
+        <p>Inline error banner with red border-left, icon, text, and <strong>dismiss button</strong>. Uses <code>role="alert"</code> for screen readers.</p>
+      </div>
+    </div>
+    <span class="slide-number">7 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 8: DESIGN EVOLUTION ============ -->
+  <div class="slide">
+    <div class="section-label">Design</div>
+    <h2>Design Evolution — Iterations</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="t-label">V1 — Initial Build</div>
+        <div class="t-text">Dark mode with purple gradients, glassmorphism cards, bouncy animations. Looked like every other AI demo on the internet. Functional but generic.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">V2 — Dark Minimal</div>
+        <div class="t-text">Stripped the gradients. Moved to a Vercel/Linear-inspired dark theme — black background, white text, 1px borders. Cleaner, but still felt like a "developer template."</div>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">V3 — Enterprise Light (Final)</div>
+        <div class="t-text">Complete rewrite to light mode. Scandinavian minimalism. 8px grid, system fonts, single accent color, skeleton loaders, data tables, semantic HTML. Feels like a real product, not a demo.</div>
+      </div>
+    </div>
+    <div style="margin-top: 24px;">
+      <span class="badge blue">Key Lesson</span>
+      <span style="font-size: 15px; color: var(--text-secondary);">Good design isn't about adding effects — it's about having a strict system and following it consistently.</span>
+    </div>
+    <span class="slide-number">8 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 9: DIFFICULTIES ============ -->
+  <div class="slide">
+    <div class="section-label">Challenges</div>
+    <h2>Difficulties &amp; How I Solved Them</h2>
+    <div class="two-col">
+      <div>
+        <div class="card danger-border" style="margin-bottom: 16px;">
+          <div class="card-label">API Authentication (401)</div>
+          <p>Initial Gemini API key was in the wrong format. Debugged by inspecting the raw error response — the <code>ACCESS_TOKEN_TYPE_UNSUPPORTED</code> detail revealed it was a credential format issue, not a permissions issue.</p>
+        </div>
+        <div class="card warning-border" style="margin-bottom: 16px;">
+          <div class="card-label">Model Deprecation (404)</div>
+          <p>Midway through development, <code>gemini-2.5-flash</code> was deprecated for new keys. Had to pivot the entire backend from Google GenAI to Groq. Required rewriting the API route and switching the SDK.</p>
+        </div>
+        <div class="card warning-border">
+          <div class="card-label">Rate Limiting (429)</div>
+          <p>Hit the free-tier quota on Gemini during testing. This was the deciding factor to migrate to Groq's more generous free tier.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card accent-border" style="margin-bottom: 16px;">
+          <div class="card-label">CSS Connector Lines</div>
+          <p>Drawing L-shaped tree connectors with pure CSS was the hardest layout problem. Required careful use of <code>::before</code> / <code>::after</code> pseudo-elements with <code>:first-child</code> / <code>:last-child</code> selectors to handle edge cases.</p>
+        </div>
+        <div class="card accent-border" style="margin-bottom: 16px;">
+          <div class="card-label">LLM Output Consistency</div>
+          <p>Without <code>response_format: json_object</code>, the LLM would intermittently wrap output in markdown fences or add explanatory text. Strict JSON mode solved this entirely.</p>
+        </div>
+        <div class="card accent-border">
+          <div class="card-label">Icon Compatibility</div>
+          <p>Lucide React v1.21 doesn't export brand icons (<code>Github</code>, <code>Twitter</code>). Had to discover this through build errors and switch to generic alternatives.</p>
+        </div>
+      </div>
+    </div>
+    <span class="slide-number">9 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 10: WHY GROQ ============ -->
+  <div class="slide">
+    <div class="section-label">Decision Log</div>
+    <h2>Why Groq over Gemini?</h2>
+    <table>
+      <thead>
+        <tr><th>Factor</th><th>Google Gemini</th><th>Groq (LLaMA 3.3)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Inference Speed</td>
+          <td>~2-4 seconds</td>
+          <td style="color: var(--success); font-weight: 600;">&lt;1 second (800+ tok/s)</td>
+        </tr>
+        <tr>
+          <td>Free Tier Quota</td>
+          <td>Ran out during testing</td>
+          <td style="color: var(--success); font-weight: 600;">Generous — sustained testing</td>
+        </tr>
+        <tr>
+          <td>JSON Mode</td>
+          <td><code>responseMimeType: "application/json"</code></td>
+          <td><code>response_format: { type: "json_object" }</code></td>
+        </tr>
+        <tr>
+          <td>Model Stability</td>
+          <td>Model deprecated mid-project</td>
+          <td style="color: var(--success); font-weight: 600;">Stable, versioned models</td>
+        </tr>
+        <tr>
+          <td>SDK Simplicity</td>
+          <td><code>@google/genai</code> — v1beta API quirks</td>
+          <td><code>groq-sdk</code> — OpenAI-compatible interface</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 24px; font-size: 15px; color: var(--text-secondary);">
+      <strong>Verdict:</strong> Groq's speed makes the demo feel instant. Users don't wait — they see skeleton loaders for &lt;1 second before the full tree renders. For a live demo, latency is everything.
+    </p>
+    <span class="slide-number">10 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 11: ACCESSIBILITY ============ -->
+  <div class="slide">
+    <div class="section-label">Quality</div>
+    <h2>Accessibility &amp; UX Polish</h2>
+    <div class="three-col">
+      <div>
+        <h3>Keyboard Navigation</h3>
+        <ul>
+          <li>All timeline nodes are <strong>focusable</strong> with <code>tabIndex={0}</code></li>
+          <li>Enter/Space toggles expand/collapse</li>
+          <li><code>focus-visible</code> rings on every interactive element</li>
+          <li>Tab order follows visual reading order</li>
+        </ul>
+      </div>
+      <div>
+        <h3>ARIA Attributes</h3>
+        <ul>
+          <li><code>aria-expanded</code> on toggle headers</li>
+          <li><code>aria-label</code> on icon-only buttons</li>
+          <li><code>aria-describedby</code> links input to error</li>
+          <li><code>role="alert"</code> on error banners</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Semantic HTML</h3>
+        <ul>
+          <li><code>&lt;header&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code> landmarks</li>
+          <li><code>&lt;article&gt;</code> for content pages</li>
+          <li><code>&lt;address&gt;</code> for contact info</li>
+          <li>Labeled inputs with <code>&lt;label&gt;</code></li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top: 32px;">
+      <h3>Responsive Breakpoints</h3>
+      <div class="flow" style="margin-top: 12px;">
+        <div class="flow-box highlight">1120px — max-width</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">768px — tablet</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">480px — mobile</div>
+      </div>
+    </div>
+    <span class="slide-number">11 / 12</span>
+  </div>
+
+  <!-- ============ SLIDE 12: CLOSING ============ -->
+  <div class="slide title-slide">
+    <div class="section-label">Summary</div>
+    <h1>Key Takeaways</h1>
+    <div style="max-width: 640px;">
+      <ul>
+        <li><strong>LLMs need contracts</strong> — strict JSON schemas with response format enforcement eliminate post-processing complexity</li>
+        <li><strong>API resilience matters</strong> — building with a fallback LLM provider saved the project when Gemini's free tier broke</li>
+        <li><strong>Design is a system, not decoration</strong> — an 8px grid with token-driven CSS scales better than ad-hoc styling</li>
+        <li><strong>Recursive React is powerful</strong> — a single 20-line function renders an arbitrarily deep timeline tree</li>
+      </ul>
+    </div>
+    <p class="meta-line" style="margin-top: 32px;">
+      Thank you. &nbsp;·&nbsp; Live demo available at localhost:3000 &nbsp;·&nbsp; 
+      <span style="color: var(--accent);">github.com/skibiditommy/ai-alternate-universe</span>
+    </p>
+    <span class="slide-number">12 / 12</span>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav-bar">
+  <button onclick="prevSlide()">← Previous</button>
+  <span class="key-hint">Use ← → arrow keys to navigate</span>
+  <button onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    progress.style.width = ((current + 1) / slides.length * 100) + '%';
+  }
+
+  function nextSlide() { showSlide(current + 1); }
+  function prevSlide() { showSlide(current - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  });
+
+  // Initialize progress
+  progress.style.width = (1 / slides.length * 100) + '%';
+</script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Briefcase, Heart, Brain, Activity } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 export default function TimelineNode({ node, isRoot = false }) {
   const [isExpanded, setIsExpanded] = useState(isRoot);
@@ -14,13 +14,20 @@ export default function TimelineNode({ node, isRoot = false }) {
   const probClass = getProbabilityClass(node.probability);
 
   return (
-    <div className={`timeline-node ${isRoot ? 'root-node' : ''} ${probClass}`}>
-      <div className="node-header" onClick={() => setIsExpanded(!isExpanded)}>
+    <div className={`timeline-node ${probClass}`}>
+      <div
+        className="node-header"
+        onClick={() => setIsExpanded(!isExpanded)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(!isExpanded); }}}
+      >
         <div className="node-meta">
           <span className="node-year">{node.year}</span>
           {!isRoot && (
-            <div className={`probability-badge ${probClass}`}>
-              <Activity size={12} strokeWidth={3} />
+            <div className={`probability-indicator ${probClass}`}>
+              <span className="prob-dot"></span>
               <span>{node.probability}%</span>
             </div>
           )}
@@ -28,7 +35,7 @@ export default function TimelineNode({ node, isRoot = false }) {
         <h3 className="node-title">{node.title}</h3>
         <div className="node-toggle">
           <div className={`toggle-icon ${isExpanded ? 'rotated' : ''}`}>
-             <ChevronDown size={18} />
+             <ChevronDown size={16} />
           </div>
         </div>
       </div>
@@ -36,15 +43,15 @@ export default function TimelineNode({ node, isRoot = false }) {
       <div className={`node-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
         <div className="node-content">
           <div className="content-section">
-            <h4><Briefcase size={14} /> Career</h4>
+            <h4>Career</h4>
             <p>{node.career}</p>
           </div>
           <div className="content-section">
-            <h4><Heart size={14} /> Lifestyle</h4>
+            <h4>Lifestyle</h4>
             <p>{node.lifestyle}</p>
           </div>
           <div className="content-section">
-            <h4><Brain size={14} /> Personality</h4>
+            <h4>Personality</h4>
             <p>{node.personality}</p>
           </div>
         </div>

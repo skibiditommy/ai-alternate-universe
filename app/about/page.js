@@ -1,35 +1,75 @@
 export default function About() {
   return (
-    <div className="container-fluid animate-fade-in-up">
-      <div className="content-page">
+    <div className="container-fluid animate-fade-in">
+      <article className="content-page">
         <h1>How It Works</h1>
         <div className="prose">
           <p>
-            <strong>PathFinder</strong> is an AI-powered simulation engine designed to explore <em>"The Road Not Taken."</em> 
-            We all have moments in our past where a single decision could have drastically altered the trajectory of our lives. 
-            This application allows you to explore those divergent paths safely.
+            <strong>PathFinder</strong> is an AI simulation engine that explores
+            &ldquo;The Road Not Taken.&rdquo; Enter a past decision point, and the
+            engine computes a branching tree of alternate life trajectories —
+            spanning career outcomes, lifestyle changes, and personality evolution.
           </p>
           
-          <h2>The Multiverse Engine</h2>
+          <h2>Technical Architecture</h2>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LLM Backend</td>
+                <td>Groq API — LLaMA 3.3 70B Versatile, sub-second inference</td>
+              </tr>
+              <tr>
+                <td>Framework</td>
+                <td>Next.js with React server &amp; client components</td>
+              </tr>
+              <tr>
+                <td>Output Schema</td>
+                <td>Strict JSON with <code>response_format: json_object</code> enforcement</td>
+              </tr>
+              <tr>
+                <td>Visualization</td>
+                <td>Recursive flexbox tree with horizontal branching layout</td>
+              </tr>
+              <tr>
+                <td>Deployment</td>
+                <td>Vercel edge network with serverless API routes</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Divergence Mechanics</h2>
           <p>
-            Under the hood, PathFinder is powered by the high-performance <strong>Gemini</strong> model by Google.
-            When you enter a past decision, the AI acts as a "Timeline Architect", computing a vast branching structure of your life across multiple decades.
+            The prompt engineering enforces three constraints on the LLM output
+            to prevent generic &ldquo;AI slop&rdquo; timelines:
           </p>
-          
-          <h2>How We Simulate Reality</h2>
           <ul>
-            <li><strong>Genuine Divergence:</strong> The AI is strictly prompted to ensure that each branch represents a truly different life path—some leading to massive success, others to unexpected pivots, and some to quiet contentment.</li>
-            <li><strong>Deep Lore:</strong> A life is more than just a job. The simulation breaks down your alternate reality into three facets: your professional <strong>Career</strong>, your personal <strong>Lifestyle</strong>, and your internal <strong>Personality</strong> evolution.</li>
-            <li><strong>Probability Estimation:</strong> Not all paths are equally likely. The engine calculates a logical, defensible probability estimate for each specific timeline branch occurring relative to its siblings, ensuring realistic outcomes.</li>
+            <li><strong>Genuine Divergence</strong> — sibling branches must represent
+            meaningfully different life outcomes (e.g., success with burnout vs. quiet
+            contentment vs. a complete career pivot).</li>
+            <li><strong>Multi-faceted Simulation</strong> — each node breaks the
+            alternate reality into three orthogonal dimensions: professional career,
+            personal lifestyle, and internal personality evolution.</li>
+            <li><strong>Calibrated Probability</strong> — the engine assigns probability
+            estimates to sibling branches that sum to ~100%, producing a defensible
+            likelihood distribution across possible futures.</li>
           </ul>
 
-          <h2>The Architecture</h2>
+          <h2>Data Pipeline</h2>
           <p>
-            This application was architected as part of a <strong>Caarya build sprint</strong>, utilizing <strong>Next.js</strong> for the frontend, 
-            <strong>React</strong> for the complex recursive tree visualization, and a strict <strong>JSON Schema</strong> pipeline for LLM reasoning to ensure valid data structures.
+            User input flows through a Next.js API route to the Groq inference
+            endpoint. The LLM responds with a structured JSON tree, which the
+            frontend recursively renders as an interactive, expandable timeline.
+            Each node is collapsible and displays career, lifestyle, and personality
+            data on demand.
           </p>
         </div>
-      </div>
+      </article>
     </div>
   );
 }
